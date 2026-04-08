@@ -1,0 +1,14 @@
+{
+  "name": "motorscout",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "MotorScout production-shaped full-stack app",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
