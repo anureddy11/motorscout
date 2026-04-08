@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>MotorScout</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="app">
+    <aside class="panel rail">
+      <section class="hero">
+        <span class="eyebrow">MotorScout Production</span>
+        <h1>Track every serious listing near a buyer, then tell them which car is actually the move.</h1>
+        <p class="lede">Production-shaped backend, persistent saved searches, watchlists, inventory confidence, and API-driven ranking.</p>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Modes</div>
+            <h2>Workspace</h2>
+          </div>
+        </div>
+        <div class="nav">
+          <button class="active" data-tab="marketTab" type="button">Market View</button>
+          <button data-tab="opsTab" type="button">Ops View</button>
+          <button data-tab="watchTab" type="button">Watchlists</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Search Surface</div>
+            <h2>Inventory capture</h2>
+          </div>
+          <span class="chip" id="snapshotStamp">ZIP 94016</span>
+        </div>
+        <div class="fields">
+          <div class="field">
+            <label for="zipInput">ZIP Code</label>
+            <input id="zipInput" type="text" maxlength="5" inputmode="numeric" value="94016" />
+          </div>
+          <div class="field">
+            <label for="radiusInput">Radius</label>
+            <select id="radiusInput">
+              <option value="25">25 miles</option>
+              <option value="50">50 miles</option>
+              <option value="100" selected>100 miles</option>
+              <option value="150">150 miles</option>
+              <option value="250">250 miles</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="conditionInput">Condition</label>
+            <select id="conditionInput">
+              <option value="all">New + used</option>
+              <option value="used">Used only</option>
+              <option value="new">New only</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="inventoryFuelInput">Inventory Fuel</label>
+            <select id="inventoryFuelInput">
+              <option value="all">Gas + hybrid + EV</option>
+              <option value="Gas">Gas only</option>
+              <option value="Hybrid">Hybrid only</option>
+              <option value="EV">EV only</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="maxPriceInput">Budget Cap</label>
+            <input id="maxPriceInput" type="number" min="10000" step="500" value="45000" />
+          </div>
+          <div class="field">
+            <label for="sourceInput">Source Mix</label>
+            <select id="sourceInput">
+              <option value="all">All feeds</option>
+              <option value="marketplaces">Marketplaces only</option>
+              <option value="dealer">Dealer/OEM only</option>
+            </select>
+          </div>
+        </div>
+        <div class="stack-actions">
+          <button class="btn primary" id="refreshButton" type="button">Refresh inventory</button>
+          <button class="btn" id="saveSearchButton" type="button">Save this search</button>
+          <button class="btn" id="resetButton" type="button">Reset</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Preference Model</div>
+            <h2>Buyer fit</h2>
+          </div>
+        </div>
+        <div class="fields">
+          <div class="field">
+            <label for="bodyStyleInput">Body Style</label>
+            <select id="bodyStyleInput">
+              <option value="any">Any</option>
+              <option value="SUV">SUV</option>
+              <option value="Sedan">Sedan</option>
+              <option value="Truck">Truck</option>
+              <option value="Coupe">Coupe</option>
+              <option value="Wagon">Wagon</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="fuelInput">Preferred Fuel</label>
+            <select id="fuelInput">
+              <option value="any">Any</option>
+              <option value="Gas">Gas</option>
+              <option value="Hybrid">Hybrid</option>
+              <option value="EV">EV</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="maxMileageInput">Mileage Ceiling</label>
+            <input id="maxMileageInput" type="number" min="0" step="5000" value="50000" />
+          </div>
+          <div class="field">
+            <label for="ageInput">Model Year Floor</label>
+            <input id="ageInput" type="number" min="2012" max="2026" value="2019" />
+          </div>
+          <div class="field full">
+            <label for="fitBiasInput">Deal vs. exact match</label>
+            <input id="fitBiasInput" type="range" min="0" max="100" value="58" />
+            <div class="small" id="fitBiasLabel">Balanced</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Inventory Quality</div>
+            <h2>Tracked to the tee?</h2>
+          </div>
+        </div>
+        <div class="score" id="coverageScore"></div>
+      </section>
+
+      <section class="card">
+        <div class="section-head">
+          <div>
+            <div class="kicker">Live Readout</div>
+            <h2>What the system knows</h2>
+          </div>
+        </div>
+        <div class="feed-list" id="insightList"></div>
+      </section>
+    </aside>
+
+    <section class="panel main">
+      <div id="marketTab" class="tab active">
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <span class="eyebrow" id="resultBadge">0 active listings</span>
+              <h2>Market command center</h2>
+              <p class="small" id="summaryText">Inventory is scored across coverage quality, value, and buyer fit.</p>
+            </div>
+            <div class="actions" id="summaryChips"></div>
+          </div>
+          <div class="stats" id="statsGrid"></div>
+        </section>
+
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <div class="kicker">Ranked Opportunities</div>
+              <h2>Best cars right now</h2>
+            </div>
+            <p class="small">Each card blends deal score, buyer match, inventory confidence, listing age, and source quality.</p>
+          </div>
+          <div class="results" id="resultsList"></div>
+        </section>
+
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <div class="kicker">Listing Breakdown</div>
+              <h2>Decision detail</h2>
+            </div>
+            <p class="small" id="detailCaption">Select a listing to inspect its economics, risks, and fit.</p>
+          </div>
+          <div class="detail-layout" id="detailPanel"></div>
+        </section>
+      </div>
+
+      <div id="opsTab" class="tab">
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <div class="kicker">Collection Ops</div>
+              <h2>Inventory coverage diagnostics</h2>
+            </div>
+          </div>
+          <div class="ops-grid" id="opsGrid"></div>
+        </section>
+
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <div class="kicker">Ingestion Pipeline</div>
+              <h2>What makes coverage trustworthy</h2>
+            </div>
+          </div>
+          <div class="pipeline-grid" id="pipelineGrid"></div>
+        </section>
+
+        <section class="card">
+          <div class="section-head">
+            <div>
+              <div class="kicker">Source Health</div>
+              <h2>Per-channel quality</h2>
+            </div>
+          </div>
+          <div class="source-list" id="sourceList"></div>
+        </section>
+      </div>
+
+      <div id="watchTab" class="tab">
+        <div class="two-up">
+          <section class="card">
+            <div class="section-head">
+              <div>
+                <div class="kicker">Saved Searches</div>
+                <h2>Return to strong setups</h2>
+              </div>
+            </div>
+            <div class="searches" id="searchList"></div>
+          </section>
+
+          <section class="card">
+            <div class="section-head">
+              <div>
+                <div class="kicker">Shortlist</div>
+                <h2>Watchlist candidates</h2>
+              </div>
+            </div>
+            <div class="watchlist" id="watchList"></div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
